@@ -1,0 +1,5 @@
+html,
+body {
+    background: #000000;
+    -webkit-app-region: drag;
+}
