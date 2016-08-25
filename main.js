@@ -12,15 +12,12 @@ var images_dir = 'data/yeast_data';
 
 app.on('ready', function() {
     mainWindow = new BrowserWindow({
-        height: 768,
-        width: 1024
+        height: 620,
+        width: 820,
+        resizable: false,
+        frame: false
     });
 
-
-    globalShortcut.register('1', function () {
-        mainWindow.webContents.send('global-shortcut', 0);
-        console.log('1');
-    });
 
     var files = fs.readdirSync(images_dir);
 
@@ -37,32 +34,51 @@ app.on('ready', function() {
 
     //mainWindow.openDevTools();
 
-    var currentFile = 1;
+    var currentFile = 0;
 
     var tags = new Object();
 
-    globalShortcut.register('2', function () {
+    var nextFile = function () {
+        currentFile++;
         var fq_file_path = '../' + images_dir + '/' + files[currentFile];
         mainWindow.webContents.send('load-image', {msg: fq_file_path});
-        tags[fq_file_path] = 'yay';
-        currentFile++;
+    };
 
-        //console.log(tags);
+    var prevFile = function() {
+        currentFile--;
+        var fq_file_path = '../' + images_dir + '/' + files[currentFile];
+        mainWindow.webContents.send('load-image', {msg: fq_file_path});       
+    };
+
+    globalShortcut.register('1', function() {
+        tags[files[currentFile]] = 'good';
+        nextFile();
     });
 
+    globalShortcut.register('2', function() {
+        tags[files[currentFile]] = 'bad';
+        nextFile();
+    });
+
+    globalShortcut.register('l', nextFile);
+    globalShortcut.register('h', prevFile);
+
     globalShortcut.register('s', function() {
-        console.log('save');
 
         var f = fs.openSync("tags.out", "w");
 
-        fs.writeFileSync(f, "Hello.", 'utf8');
-
         Object.keys(tags).forEach(function(key) {
             fs.writeSync(f, key + '\t' + tags[key] + '\n');
-//            console.log(key);
         });
 
     });
 
+    globalShortcut.register('q', function() {
+        app.quit();
+    });
+
+    globalShortcut.register('Esc', function() {
+        app.quit();
+    });
 
 });
