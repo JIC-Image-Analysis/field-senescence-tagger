@@ -28,7 +28,7 @@ app.on('ready', function() {
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
     mainWindow.webContents.on('did-finish-load', function() {
-        mainWindow.webContents.send('load-image', {msg: startFile});
+        mainWindow.webContents.send('load-image', {msg: startFile, tag: "Untagged"});
         mainWindow.show();
     });
 
@@ -37,27 +37,39 @@ app.on('ready', function() {
     var currentFile = 0;
 
     var tags = new Object();
+    files.forEach(function(file) {
+        tags[file] = "Untagged";
+    });
 
     var nextFile = function () {
-        currentFile++;
-        var fq_file_path = '../' + images_dir + '/' + files[currentFile];
-        mainWindow.webContents.send('load-image', {msg: fq_file_path});
+        if ((currentFile+1) < files.length) {
+            currentFile++;
+            var fq_file_path = '../' + images_dir + '/' + files[currentFile];
+            mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]]});
+        };
     };
 
     var prevFile = function() {
-        currentFile--;
-        var fq_file_path = '../' + images_dir + '/' + files[currentFile];
-        mainWindow.webContents.send('load-image', {msg: fq_file_path});       
+        if (currentFile > 0) {
+            currentFile--;
+            var fq_file_path = '../' + images_dir + '/' + files[currentFile];
+            mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]]});       
+        };
     };
 
     globalShortcut.register('1', function() {
         tags[files[currentFile]] = 'good';
-        nextFile();
+        var fq_file_path = '../' + images_dir + '/' + files[currentFile];
+        mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]]});       
+
+        //nextFile();
     });
 
     globalShortcut.register('2', function() {
         tags[files[currentFile]] = 'bad';
-        nextFile();
+        var fq_file_path = '../' + images_dir + '/' + files[currentFile];
+        mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]]});       
+        //nextFile();
     });
 
     globalShortcut.register('l', nextFile);

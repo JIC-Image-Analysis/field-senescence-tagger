@@ -3,3 +3,21 @@ body {
     background: #000000;
     -webkit-app-region: drag;
 }
+
+.image {
+    position: relative;
+}
+
+h2 {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    width: 100%;
+}
+
+h2 span {
+    color: white;
+    background: rgb(0, 0, 0);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+}

@@ -14,6 +14,7 @@ ipcRenderer.on('load-image', function(event, data) {
     var filename = data.msg;
 
     document.getElementById("mainImage").src = filename;
+    document.getElementById("tag").innerHTML = data.tag;
 
     console.log(filename);
 
