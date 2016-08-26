@@ -11,5 +11,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:JIC-CSB/image-tagger.git"
-  }
+  },
+  "license": "MIT"
 }
