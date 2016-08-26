@@ -1,5 +1,5 @@
 {
-  "name": "image_viewer",
+  "name": "image-tagger",
   "version": "0.1.0",
   "main": "./main.js",
   "scripts": {
