@@ -12,8 +12,9 @@ ipcRenderer.on('global-shortcut', function(arg) {
 
 ipcRenderer.on('load-image', function(event, data) {
     var filename = data.msg;
+    var pos = data.pos;
 
-    document.getElementById("mainImage").src = filename;
+    document.getElementById(pos).src = filename;
     document.getElementById("tag").innerHTML = data.tag;
 
     console.log(filename);
