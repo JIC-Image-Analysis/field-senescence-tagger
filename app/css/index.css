@@ -10,8 +10,8 @@ body {
 
 h2 {
     position: absolute;
-    top: 50px;
-    left: 50px;
+    bottom: 50px;
+    left: 450px;
     width: 100%;
 }
 
@@ -26,6 +26,7 @@ h2 span {
     width:100%; 
     height:100%;
 }
+
 .tile{ 
     border:0px solid #000;         
     padding-bottom: 0%; 

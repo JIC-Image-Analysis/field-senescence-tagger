@@ -23,6 +23,10 @@ ipcRenderer.on('load-image', function(event, data) {
 
 });
 
+ipcRenderer.on('set-tag', function(event, data) {
+    document.getElementById('tag').innerHTML = data.tag;
+});
+
 ipcRenderer.on('load-many-images', function(event, data) {
     var filenames = data.files;
 

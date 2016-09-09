@@ -82,10 +82,16 @@ app.on('ready', function() {
         tags[files[0]] = "Untagged";
     });
 
+    var showTag = function(newTag) {
+        mainWindow.webContents.send('set-tag', {tag: newTag});       
+
+    }
+
     var nextFile = function () {
         if ((currentFile+1) < tripletArrays.length) {
             currentFile++;
-            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], tag: 'hello'});                        
+            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});    
+            showTag(tags[tripletArrays[currentFile][0]]);                    
         };
     };
 
@@ -93,22 +99,20 @@ app.on('ready', function() {
         if (currentFile > 0) {
             currentFile--;
             mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});
+            showTag(tags[tripletArrays[currentFile][0]]);                    
         };
     };
 
     globalShortcut.register('1', function() {
-        tags[tripletArrays[currentFile][0]] = 'good';
-        //var fq_file_path = '../' + images_dir + '/' + files[currentFile];
-        mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: 'rt'});       
-
-        //nextFile();
+        var newTag = 'good';
+        tags[tripletArrays[currentFile][0]] = newTag;
+        showTag(newTag);
     });
 
     globalShortcut.register('2', function() {
-        tags[files[currentFile]] = 'bad';
-        var fq_file_path = '../' + images_dir + '/' + files[currentFile];
-        mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]]});       
-        //nextFile();
+        var newTag = 'bad';
+        tags[tripletArrays[currentFile][0]] = newTag;
+        mainWindow.webContents.send('set-tag', {tag: newTag});       
     });
 
     globalShortcut.register('l', nextFile);
