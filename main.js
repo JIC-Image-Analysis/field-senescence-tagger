@@ -13,13 +13,13 @@ var images_dir = 'data/cell-data';
 
 var TaggedImage = function() {};
 
-var generateImagePathArrays = function(imagesDir) {
+var generateImagePathArrays = function(imagesDir, keywords) {
+    /* Load files from a directory. The keywords are used to split the files
+    up into different arrays. The function returns three arrays. */
 
     var files = fs.readdirSync(imagesDir);
 
-    var keywords = ['wall', 'marker', 'combined']
     var nKeywords = keywords.length
-
 
     var pathArrays = [[], [], []]
 
@@ -35,7 +35,16 @@ var generateImagePathArrays = function(imagesDir) {
 
 };
 
+var zipArrays = function(arrays) {
+
+    return arrays[0].map(function(_,i){
+        return arrays.map(function(array){return array[i]})
+    });
+
+}
+
 app.on('ready', function() {
+
     mainWindow = new BrowserWindow({
         height: 620,
         width: 820,
@@ -47,54 +56,41 @@ app.on('ready', function() {
     //var files = fs.readdirSync(images_dir);
 
 
-    var fileNameArrays = generateImagePathArrays(images_dir);
+    var keywords = ['wall', 'marker', 'combined']
 
-    var files = fileNameArrays[0];
-    var files2 = fileNameArrays[1];
-    var files3 = fileNameArrays[2];
+    var fileNameArrays = generateImagePathArrays(images_dir, keywords);
+    var tripletArrays = zipArrays(fileNameArrays);
 
-    console.log(fileNameArrays);
+    console.log(tripletArrays);
 
-    var startFile = '../' + images_dir + '/' + files[0];
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
-
-    mainWindow.webContents.on('did-finish-load', function() {
-        mainWindow.webContents.send('load-image', {msg: startFile, tag: "Untagged"});
-        mainWindow.show();
-    });
 
     //mainWindow.openDevTools();
 
     var currentFile = 0;
 
+    mainWindow.webContents.on('did-finish-load', function() {
+        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
+        mainWindow.show();
+    });
+
     var tags = new Object();
-    files.forEach(function(file) {
-        tags[file] = "Untagged";
+    tripletArrays.forEach(function(files) {
+        tags[files[0]] = "Untagged";
     });
 
     var nextFile = function () {
-        if ((currentFile+1) < files.length) {
+        if ((currentFile+1) < tripletArrays.length) {
             currentFile++;
-            //var fq_file_path = '../' + images_dir + '/' + files[currentFile];
-            var fq_file_path = '../' + files[currentFile];
-            var fq_file_path2 = '../' + files2[currentFile];
-            var fq_file_path3 = '../' + files3[currentFile]; 
-            console.log(fq_file_path);
-            console.log(fq_file_path2);                       
-            console.log(fq_file_path3);                                  
-            mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]], pos: "topLeft"});
-            mainWindow.webContents.send('load-image', {msg: fq_file_path2, tag: tags[files[currentFile]], pos: "topRight"});
-            mainWindow.webContents.send('load-image', {msg: fq_file_path3, tag: tags[files[currentFile]], pos: "bottomLeft"});            
-
+            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], tag: 'hello'});                        
         };
     };
 
     var prevFile = function() {
         if (currentFile > 0) {
             currentFile--;
-            var fq_file_path = '../' + images_dir + '/' + files[currentFile];
-            mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]]});       
+            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});
         };
     };
 
