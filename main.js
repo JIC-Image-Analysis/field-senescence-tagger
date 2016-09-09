@@ -36,6 +36,8 @@ var generateImagePathArrays = function(imagesDir, keywords) {
 };
 
 var zipArrays = function(arrays) {
+    /* Input arrays of arrays the form [[1, 2, ...], [a, b, ...], ...] and
+    return arrays of the form [[1, a, ...], [2, b, ..], ..] */
 
     return arrays[0].map(function(_,i){
         return arrays.map(function(array){return array[i]})
@@ -95,9 +97,9 @@ app.on('ready', function() {
     };
 
     globalShortcut.register('1', function() {
-        tags[files[currentFile]] = 'good';
-        var fq_file_path = '../' + images_dir + '/' + files[currentFile];
-        mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: tags[files[currentFile]]});       
+        tags[tripletArrays[currentFile][0]] = 'good';
+        //var fq_file_path = '../' + images_dir + '/' + files[currentFile];
+        mainWindow.webContents.send('load-image', {msg: fq_file_path, tag: 'rt'});       
 
         //nextFile();
     });
