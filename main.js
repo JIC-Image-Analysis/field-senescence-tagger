@@ -54,17 +54,19 @@ app.on('ready', function() {
         frame: false
     });
 
+    var findFileNamesFromDirectory = function(imagesDir) {
 
-    //var files = fs.readdirSync(images_dir);
+        var keywords = ['wall', 'marker', 'combined'];
 
+        var fileNameArrays = generateImagePathArrays(imagesDir, keywords);
 
-    var keywords = ['wall', 'marker', 'combined']
+        var tripletArrays = zipArrays(fileNameArrays);
 
-    var fileNameArrays = generateImagePathArrays(images_dir, keywords);
-    var tripletArrays = zipArrays(fileNameArrays);
+        return tripletArrays;
+    }
 
-    console.log(tripletArrays);
-
+    var tags;
+    var tripletArrays;
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
@@ -72,15 +74,21 @@ app.on('ready', function() {
 
     var currentFile = 0;
 
-    mainWindow.webContents.on('did-finish-load', function() {
-        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
-        mainWindow.show();
-    });
+    // mainWindow.webContents.on('did-finish-load', function() {
+    //     mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
+    //     mainWindow.show();
+    // });
 
-    var tags = new Object();
-    tripletArrays.forEach(function(files) {
-        tags[files[0]] = "Untagged";
-    });
+    var setInitialTags = function(nameArrays) {
+
+        var initialTags = new Object();
+        nameArrays.forEach(function(files) {
+            initialTags[files[0]] = "Untagged";
+        });
+
+        return initialTags;
+    }
+
 
     var showTag = function(newTag) {
         mainWindow.webContents.send('set-tag', {tag: newTag});       
@@ -91,6 +99,7 @@ app.on('ready', function() {
         if ((currentFile+1) < tripletArrays.length) {
             currentFile++;
             mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});    
+            console.log(tripletArrays[currentFile]);
             showTag(tags[tripletArrays[currentFile][0]]);                    
         };
     };
@@ -138,7 +147,12 @@ app.on('ready', function() {
 
     globalShortcut.register('o', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
-        console.log(dir);
+
+        tripletArrays = findFileNamesFromDirectory(dir[0]);
+
+        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
+
+        tags = setInitialTags(tripletArrays);
     })
 
 });
