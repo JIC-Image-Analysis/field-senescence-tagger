@@ -121,7 +121,7 @@ app.on('ready', function() {
     globalShortcut.register('2', function() {
         var newTag = 'bad';
         tags[tripletArrays[currentFile][0]] = newTag;
-        mainWindow.webContents.send('set-tag', {tag: newTag});       
+        showTag(newTag);
     });
 
     globalShortcut.register('l', nextFile);
