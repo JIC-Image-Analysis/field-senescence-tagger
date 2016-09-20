@@ -35,7 +35,7 @@ ipcRenderer.on('load-many-images', function(event, data) {
 
     }
 
-    document.getElementsByIf('tag').innerHTML = data.tag;
+    document.getElementById('tag').innerHTML = data.tag;
 
 });
 
