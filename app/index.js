@@ -5,6 +5,10 @@ const ipcRenderer = require('electron').ipcRenderer;
 
 var positionIds = ['topLeft', 'bottomLeft', 'topRight'];
 
+var getTagText = function(data) {
+    return data.tag + " [" + data.pos + "/" + data.tot + "]";
+};
+
 ipcRenderer.on('global-shortcut', function(arg) {
 
     console.log('hello');
@@ -24,7 +28,8 @@ ipcRenderer.on('load-image', function(event, data) {
 });
 
 ipcRenderer.on('set-tag', function(event, data) {
-    document.getElementById('tag').innerHTML = data.tag;
+    var text = getTagText(data);
+    document.getElementById('tag').innerHTML = text;
 });
 
 ipcRenderer.on('load-many-images', function(event, data) {
@@ -35,7 +40,8 @@ ipcRenderer.on('load-many-images', function(event, data) {
 
     }
 
-    document.getElementById('tag').innerHTML = data.tag;
+    var text = getTagText(data);
+    document.getElementById('tag').innerHTML = text;
 
 });
 

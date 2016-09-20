@@ -91,14 +91,14 @@ app.on('ready', function() {
 
 
     var showTag = function(newTag) {
-        mainWindow.webContents.send('set-tag', {tag: newTag});       
-
+        mainWindow.webContents.send('set-tag',
+          {tag: newTag, pos: currentFile, tot: tripletArrays.length});       
     }
 
     var nextFile = function () {
         if ((currentFile+1) < tripletArrays.length) {
             currentFile++;
-            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});    
+            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], pos: currentFile, tot: tripletArrays.length});    
             console.log(tripletArrays[currentFile]);
             showTag(tags[tripletArrays[currentFile][0]]);                    
         };
@@ -107,7 +107,7 @@ app.on('ready', function() {
     var prevFile = function() {
         if (currentFile > 0) {
             currentFile--;
-            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});
+            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], pos: currentFile, tot: tripletArrays.length});
             showTag(tags[tripletArrays[currentFile][0]]);                    
         };
     };
@@ -150,7 +150,7 @@ app.on('ready', function() {
 
         tripletArrays = findFileNamesFromDirectory(dir[0]);
 
-        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
+        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], pos: 0, tot: tripletArrays.length, tag: "Untagged"});
 
         tags = setInitialTags(tripletArrays);
     })
