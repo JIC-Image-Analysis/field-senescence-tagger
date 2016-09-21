@@ -65,6 +65,18 @@ app.on('ready', function() {
         return tripletArrays;
     }
 
+    var saveTags = function() {
+        var f = fs.openSync("tags.out", "w");
+
+        Object.keys(tags).forEach(function(key) {
+            fs.writeSync(f, key + '\t' + tags[key] + '\n');
+        });
+    }
+
+    var quiteImageTagger = function() {
+        app.quit();
+    }
+
     var tags;
     var tripletArrays;
 
@@ -127,23 +139,10 @@ app.on('ready', function() {
     globalShortcut.register('l', nextFile);
     globalShortcut.register('h', prevFile);
 
-    globalShortcut.register('s', function() {
+    globalShortcut.register('s', saveTags);
 
-        var f = fs.openSync("tags.out", "w");
-
-        Object.keys(tags).forEach(function(key) {
-            fs.writeSync(f, key + '\t' + tags[key] + '\n');
-        });
-
-    });
-
-    globalShortcut.register('q', function() {
-        app.quit();
-    });
-
-    globalShortcut.register('Esc', function() {
-        app.quit();
-    });
+    globalShortcut.register('q', quiteImageTagger);
+    globalShortcut.register('Esc', quiteImageTagger);
 
     globalShortcut.register('o', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
