@@ -129,12 +129,14 @@ app.on('ready', function() {
         var newTag = 'good';
         tags[tripletArrays[currentFile][0]] = newTag;
         showTag(newTag);
+	setTimeout(nextFile, 100);
     });
 
     globalShortcut.register('2', function() {
         var newTag = 'bad';
         tags[tripletArrays[currentFile][0]] = newTag;
         showTag(newTag);
+	setTimeout(nextFile, 100);
     });
 
     globalShortcut.register('l', nextFile);
