@@ -6,7 +6,8 @@ const ipcRenderer = require('electron').ipcRenderer;
 var positionIds = ['topLeft', 'bottomLeft', 'topRight'];
 
 var getTagText = function(data) {
-    return data.tag + " [" + data.pos + "/" + data.tot + "]";
+    var pos = data.pos + 1
+    return data.tag + " [" + pos + "/" + data.tot + "]";
 };
 
 ipcRenderer.on('global-shortcut', function(arg) {
