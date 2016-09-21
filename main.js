@@ -74,6 +74,7 @@ app.on('ready', function() {
     }
 
     var quiteImageTagger = function() {
+        saveTags();
         app.quit();
     }
 
