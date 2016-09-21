@@ -140,7 +140,10 @@ app.on('ready', function() {
     });
 
     globalShortcut.register('l', nextFile);
+    globalShortcut.register('Right', nextFile);
+
     globalShortcut.register('h', prevFile);
+    globalShortcut.register('Left', prevFile);
 
     globalShortcut.register('s', saveTags);
 
