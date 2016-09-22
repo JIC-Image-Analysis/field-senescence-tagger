@@ -49,6 +49,8 @@ ipcRenderer.on('load-many-images', function(event, data) {
 
     var text = getTagText(data);
     document.getElementById('tag').innerHTML = text;
+    document.getElementById('help').style.display = 'none';
+    document.getElementById('viewer').style.display = 'block';
 
 });
 
