@@ -9,19 +9,6 @@ body {
     position: relative;
 }
 
-h2 {
-    position: absolute;
-    bottom: 50px;
-    left: 450px;
-    width: 100%;
-}
-
-h2 span {
-    background: rgb(0, 0, 0);
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-}
-
 #container {
     width:100%; 
     height:100%;
@@ -35,6 +22,16 @@ h2 span {
     display: none;
 }
 
+#tag {
+    position: absolute;
+    bottom: 50px;
+    left: 450px;
+    width: 100%;
+    background: rgb(0, 0, 0);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+}
+
 .tile{ 
     border:0px solid #000;         
     padding-bottom: 0%; 
@@ -44,4 +41,3 @@ h2 span {
     float:left; 
     display:block;
 }
-

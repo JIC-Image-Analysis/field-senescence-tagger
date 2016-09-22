@@ -28,6 +28,11 @@ ipcRenderer.on('load-image', function(event, data) {
 
 });
 
+ipcRenderer.on('set-help', function(event, data) {
+    console.log('set-help');
+    document.getElementById('help').innerHTML = data.help_html;
+});
+
 ipcRenderer.on('set-tag', function(event, data) {
     var text = getTagText(data);
     document.getElementById('tag').innerHTML = text;

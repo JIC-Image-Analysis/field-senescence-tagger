@@ -6,6 +6,7 @@ var globalShortcut = require('electron').globalShortcut;
 const {dialog} = require('electron')
 
 var fs = require('fs');
+var marked = require('marked');
 
 var mainWindow = null;
 
@@ -91,6 +92,19 @@ app.on('ready', function() {
     //     mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
     //     mainWindow.show();
     // });
+    mainWindow.webContents.on('did-finish-load', function() {
+        fs.readFile("README.md", "utf8", function(err, data) {
+            if (err) {
+                return console.log(err);
+            }
+            var help_markdown = data;
+            var help_html = marked(help_markdown);
+            mainWindow.webContents.send('set-help', {help_html:
+                help_html});
+        });
+    });
+
+
 
     var setInitialTags = function(nameArrays) {
 
@@ -165,5 +179,6 @@ app.on('ready', function() {
 
         tags = setInitialTags(tripletArrays);
     })
+
 
 });
