@@ -125,6 +125,10 @@ app.on('ready', function() {
         };
     };
 
+    var toggleHelp = function() {
+        mainWindow.webContents.send('toggle-help', {});
+    }
+
     globalShortcut.register('1', function() {
         var newTag = 'good';
         tags[tripletArrays[currentFile][0]] = newTag;
@@ -138,6 +142,8 @@ app.on('ready', function() {
         showTag(newTag);
 	setTimeout(nextFile, 100);
     });
+
+    globalShortcut.register('h', toggleHelp);
 
     globalShortcut.register('l', nextFile);
     globalShortcut.register('Right', nextFile);

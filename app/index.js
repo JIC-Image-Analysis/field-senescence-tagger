@@ -34,6 +34,7 @@ ipcRenderer.on('set-tag', function(event, data) {
 });
 
 ipcRenderer.on('load-many-images', function(event, data) {
+    console.log('load-many-images...');
     var filenames = data.files;
 
     for( var i = 0; i < filenames.length; i++) {
@@ -43,6 +44,21 @@ ipcRenderer.on('load-many-images', function(event, data) {
 
     var text = getTagText(data);
     document.getElementById('tag').innerHTML = text;
+
+});
+
+
+ipcRenderer.on('toggle-help', function(event, data) {
+    var help_element = document.getElementById('help'),
+        help_style = window.getComputedStyle(help_element),
+        help_display = help_style.getPropertyValue('display');
+    if (help_display != 'none') {
+        document.getElementById('help').style.display = 'none';
+        document.getElementById('viewer').style.display = 'block';
+    } else {
+        document.getElementById('help').style.display = 'block';
+        document.getElementById('viewer').style.display = 'none';
+    }
 
 });
 
