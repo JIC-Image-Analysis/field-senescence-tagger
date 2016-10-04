@@ -7,6 +7,7 @@ const {dialog} = require('electron');
 const ipcMain = require('electron').ipcMain;
 
 var fs = require('fs');
+var marked = require('marked');
 
 var mainWindow = null;
 
@@ -70,6 +71,21 @@ app.on('ready', function() {
         return tripletArrays;
     }
 
+    var saveTags = function() {
+        var f = fs.openSync("tags.out", "w");
+
+        Object.keys(tags).forEach(function(key) {
+            fs.writeSync(f, key + '\t' + tags[key] + '\n');
+        });
+    }
+
+    var quiteImageTagger = function() {
+        if (tags) {
+            saveTags();
+        }
+        app.quit();
+    }
+
     var tags;
     var tripletArrays;
 
@@ -83,6 +99,19 @@ app.on('ready', function() {
     //     mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
     //     mainWindow.show();
     // });
+    mainWindow.webContents.on('did-finish-load', function() {
+        fs.readFile("README.md", "utf8", function(err, data) {
+            if (err) {
+                return console.log(err);
+            }
+            var help_markdown = data;
+            var help_html = marked(help_markdown);
+            mainWindow.webContents.send('set-help', {help_html:
+                help_html});
+        });
+    });
+
+
 
     var setInitialTags = function(nameArrays) {
 
@@ -96,14 +125,14 @@ app.on('ready', function() {
 
 
     var showTag = function(newTag) {
-        mainWindow.webContents.send('set-tag', {tag: newTag});       
-
+        mainWindow.webContents.send('set-tag',
+          {tag: newTag, pos: currentFile, tot: tripletArrays.length});       
     }
 
     var nextFile = function () {
         if ((currentFile+1) < tripletArrays.length) {
             currentFile++;
-            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});    
+            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], pos: currentFile, tot: tripletArrays.length});    
             console.log(tripletArrays[currentFile]);
             showTag(tags[tripletArrays[currentFile][0]]);                    
         };
@@ -112,52 +141,51 @@ app.on('ready', function() {
     var prevFile = function() {
         if (currentFile > 0) {
             currentFile--;
-            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile]});
+            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], pos: currentFile, tot: tripletArrays.length});
             showTag(tags[tripletArrays[currentFile][0]]);                    
         };
     };
+
+    var toggleHelp = function() {
+        mainWindow.webContents.send('toggle-help', {});
+    }
 
     globalShortcut.register('1', function() {
         var newTag = 'good';
         tags[tripletArrays[currentFile][0]] = newTag;
         showTag(newTag);
+	setTimeout(nextFile, 100);
     });
 
     globalShortcut.register('2', function() {
         var newTag = 'bad';
         tags[tripletArrays[currentFile][0]] = newTag;
-        mainWindow.webContents.send('set-tag', {tag: newTag});       
+        showTag(newTag);
+	setTimeout(nextFile, 100);
     });
+
+    globalShortcut.register('h', toggleHelp);
 
     globalShortcut.register('l', nextFile);
+    globalShortcut.register('Right', nextFile);
+
     globalShortcut.register('h', prevFile);
+    globalShortcut.register('Left', prevFile);
 
-    globalShortcut.register('s', function() {
+    globalShortcut.register('s', saveTags);
 
-        var f = fs.openSync("tags.out", "w");
-
-        Object.keys(tags).forEach(function(key) {
-            fs.writeSync(f, key + '\t' + tags[key] + '\n');
-        });
-
-    });
-
-    globalShortcut.register('q', function() {
-        app.quit();
-    });
-
-    globalShortcut.register('Esc', function() {
-        app.quit();
-    });
+    globalShortcut.register('q', quiteImageTagger);
+    globalShortcut.register('Esc', quiteImageTagger);
 
     globalShortcut.register('o', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
 
         tripletArrays = findFileNamesFromDirectory(dir[0]);
 
-        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
+        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], pos: 0, tot: tripletArrays.length, tag: "Untagged"});
 
         tags = setInitialTags(tripletArrays);
     })
+
 
 });

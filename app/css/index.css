@@ -2,29 +2,34 @@ html,
 body {
     background: #000000;
     -webkit-app-region: drag;
+    color: white;
 }
 
 .image {
     position: relative;
 }
 
-h2 {
+#container {
+    width:100%; 
+    height:100%;
+}
+
+#help {
+    display: block;
+}
+
+#viewer {
+    display: none;
+}
+
+#tag {
     position: absolute;
     bottom: 50px;
     left: 450px;
     width: 100%;
-}
-
-h2 span {
-    color: white;
     background: rgb(0, 0, 0);
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
-}
-
-#container {
-    width:100%; 
-    height:100%;
 }
 
 .tile{ 
