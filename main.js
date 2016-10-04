@@ -3,7 +3,8 @@
 var app = require('electron').app;
 var BrowserWindow = require('electron').BrowserWindow;
 var globalShortcut = require('electron').globalShortcut;
-const {dialog} = require('electron')
+const {dialog} = require('electron');
+const ipcMain = require('electron').ipcMain;
 
 var fs = require('fs');
 
@@ -46,6 +47,10 @@ var zipArrays = function(arrays) {
 }
 
 app.on('ready', function() {
+
+    ipcMain.on('mainlog', function(event, data) {
+        console.log('From renderer: ' + data.msg);
+    });
 
     mainWindow = new BrowserWindow({
         height: 620,
