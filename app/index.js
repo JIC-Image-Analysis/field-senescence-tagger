@@ -33,15 +33,22 @@ ipcRenderer.on('set-help', function(event, data) {
     document.getElementById('help').innerHTML = data.help_html;
 });
 
+var setTag = function(text) {
+    document.getElementById('tag').innerHTML = text;
+}
+
 ipcRenderer.on('set-tag', function(event, data) {
     var text = getTagText(data);
-    document.getElementById('tag').innerHTML = text;
+    setTag(text);
 });
 
 var mainLog = function(message) {
     ipcRenderer.send('mainlog', {msg: message});
 }
 
+var sendClickToMain = function(x, y) {
+    ipcRenderer.send('registerClick', {x: x, y: y});
+}
 
 var prepImage = function(selectorName) {
     var item = document.querySelector(selectorName);
@@ -53,16 +60,16 @@ var prepImage = function(selectorName) {
         var absY = event.clientY - elemRect.top;
         var normX = absX / width;
         var normY = absY / height;
-        mainLog('norm coords ' + normX + ',' + normY);
-        mainLog('clicked ' + selectorName + ' ' + (event.clientX - elemRect.left) + ',' + (event.clientY - elemRect.top));       
+        sendClickToMain(normX, normY);      
     });
+
 };
 
 ipcRenderer.on('load-many-images', function(event, data) {
     console.log('load-many-images...');
     var filenames = data.files;
 
-    for( var i = 0; i < filenames.length; i++) {
+    for( var i = 0; i < 3; i++) {
         document.getElementById(positionIds[i]).src = filenames[i];
 
     }
@@ -72,7 +79,12 @@ ipcRenderer.on('load-many-images', function(event, data) {
     prepImage('#topLeft');
 
     var text = getTagText(data);
-    document.getElementById('tag').innerHTML = text;
+    if ('normalised_marker_x_coord' in data.imageSet.metadata) {
+        document.getElementById('tag').innerHTML = 'clicked ' + data.imageSet.metadata['normalised_marker_x_coord'];
+    } else {
+        document.getElementById('tag').innerHTML = 'untagged';
+    }
+
     document.getElementById('help').style.display = 'none';
     document.getElementById('viewer').style.display = 'block';
 

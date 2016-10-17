@@ -13,7 +13,8 @@ var mainWindow = null;
 
 var images_dir = 'data/cell-data';
 
-var TaggedImage = function() {};
+var ImageSet = function() {};
+var imageSets = [];
 
 var generateImagePathArrays = function(imagesDir, keywords) {
     /* Load files from a directory. The keywords are used to split the files
@@ -23,7 +24,11 @@ var generateImagePathArrays = function(imagesDir, keywords) {
 
     var nKeywords = keywords.length
 
-    var pathArrays = [[], [], []]
+    var pathArrays = [];
+
+    for (var i = 0; i < nKeywords; i++) {
+        pathArrays.push([]);
+    }
 
     for (var i = 0; i < files.length; i++) {
         for (var j = 0; j < nKeywords; j++) {
@@ -37,6 +42,14 @@ var generateImagePathArrays = function(imagesDir, keywords) {
 
 };
 
+var loadJSONData = function(fq_filename) {
+
+    var JSONData = JSON.parse(fs.readFileSync(fq_filename, 'utf8'));
+
+    return JSONData;
+
+}
+
 var zipArrays = function(arrays) {
     /* Input arrays of arrays the form [[1, 2, ...], [a, b, ...], ...] and
     return arrays of the form [[1, a, ...], [2, b, ..], ..] */
@@ -47,10 +60,39 @@ var zipArrays = function(arrays) {
 
 }
 
+var loadImagesetsFromDirectory = function(imagesDir) {
+
+    var keywords = ['wall', 'marker', 'combined', 'json'];
+
+    var fileNameArrays = generateImagePathArrays(imagesDir, keywords);
+
+    var dataArrays = zipArrays(fileNameArrays);
+
+    var imageSets = [];
+
+    for(var i = 0; i < dataArrays.length; i++) {
+        var is = new ImageSet();
+        is.metadata = loadJSONData(dataArrays[i][3]);
+        is.jsonFilename = dataArrays[i][3];
+        is.filenames = dataArrays[i];
+        imageSets.push(is);       
+    }
+
+    return imageSets;
+}
+
 app.on('ready', function() {
 
     ipcMain.on('mainlog', function(event, data) {
         console.log('From renderer: ' + data.msg);
+    });
+
+    ipcMain.on('registerClick', function(event, data) {
+
+        imageSets[currentFile].metadata['normalised_marker_x_coord'] = data.x;
+        imageSets[currentFile].metadata['normalised_marker_y_coord'] = data.y;
+
+        showTag('clicked');
     });
 
     mainWindow = new BrowserWindow({
@@ -62,13 +104,13 @@ app.on('ready', function() {
 
     var findFileNamesFromDirectory = function(imagesDir) {
 
-        var keywords = ['wall', 'marker', 'combined'];
+        var keywords = ['wall', 'marker', 'combined', 'json'];
 
         var fileNameArrays = generateImagePathArrays(imagesDir, keywords);
 
-        var tripletArrays = zipArrays(fileNameArrays);
+        var dataArrays = zipArrays(fileNameArrays);
 
-        return tripletArrays;
+        return dataArrays;
     }
 
     var saveTags = function() {
@@ -77,6 +119,11 @@ app.on('ready', function() {
         Object.keys(tags).forEach(function(key) {
             fs.writeSync(f, key + '\t' + tags[key] + '\n');
         });
+
+        for(var i = 0; i < imageSets.length; i++) {
+            f = fs.openSync(imageSets[i].jsonFilename, "w");
+            fs.writeSync(f, JSON.stringify(imageSets[i].metadata, null, '\t'));
+        }
     }
 
     var quiteImageTagger = function() {
@@ -87,7 +134,7 @@ app.on('ready', function() {
     }
 
     var tags;
-    var tripletArrays;
+    var dataArrays;
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
@@ -96,7 +143,7 @@ app.on('ready', function() {
     var currentFile = 0;
 
     // mainWindow.webContents.on('did-finish-load', function() {
-    //     mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], tag: "Untagged"});
+    //     mainWindow.webContents.send('load-many-images', {files: dataArrays[0], tag: "Untagged"});
     //     mainWindow.show();
     // });
     mainWindow.webContents.on('did-finish-load', function() {
@@ -126,23 +173,27 @@ app.on('ready', function() {
 
     var showTag = function(newTag) {
         mainWindow.webContents.send('set-tag',
-          {tag: newTag, pos: currentFile, tot: tripletArrays.length});       
+          {tag: newTag, pos: currentFile, tot: dataArrays.length});       
     }
 
     var nextFile = function () {
-        if ((currentFile+1) < tripletArrays.length) {
+        if ((currentFile+1) < dataArrays.length) {
             currentFile++;
-            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], pos: currentFile, tot: tripletArrays.length});    
-            console.log(tripletArrays[currentFile]);
-            showTag(tags[tripletArrays[currentFile][0]]);                    
+            mainWindow.webContents.send('load-many-images', {files: dataArrays[currentFile], 
+                pos: currentFile, 
+                tot: dataArrays.length,
+                imageSet: imageSets[currentFile]
+            });    
+            console.log(dataArrays[currentFile]);
+            //showTag(tags[dataArrays[currentFile][0]]);                    
         };
     };
 
     var prevFile = function() {
         if (currentFile > 0) {
             currentFile--;
-            mainWindow.webContents.send('load-many-images', {files: tripletArrays[currentFile], pos: currentFile, tot: tripletArrays.length});
-            showTag(tags[tripletArrays[currentFile][0]]);                    
+            mainWindow.webContents.send('load-many-images', {files: dataArrays[currentFile], pos: currentFile, tot: dataArrays.length});
+            showTag(tags[dataArrays[currentFile][0]]);                    
         };
     };
 
@@ -152,14 +203,14 @@ app.on('ready', function() {
 
     globalShortcut.register('1', function() {
         var newTag = 'good';
-        tags[tripletArrays[currentFile][0]] = newTag;
+        tags[dataArrays[currentFile][0]] = newTag;
         showTag(newTag);
 	setTimeout(nextFile, 100);
     });
 
     globalShortcut.register('2', function() {
         var newTag = 'bad';
-        tags[tripletArrays[currentFile][0]] = newTag;
+        tags[dataArrays[currentFile][0]] = newTag;
         showTag(newTag);
 	setTimeout(nextFile, 100);
     });
@@ -180,11 +231,22 @@ app.on('ready', function() {
     globalShortcut.register('o', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
 
-        tripletArrays = findFileNamesFromDirectory(dir[0]);
+        dataArrays = findFileNamesFromDirectory(dir[0]);
 
-        mainWindow.webContents.send('load-many-images', {files: tripletArrays[0], pos: 0, tot: tripletArrays.length, tag: "Untagged"});
+        console.log(dataArrays);
+        imageSets = loadImagesetsFromDirectory(dir[0]);
 
-        tags = setInitialTags(tripletArrays);
+        mainWindow.webContents.send('load-many-images', {files: dataArrays[0], 
+            pos: 0, tot: dataArrays.length, 
+            tag: "Untagged",
+            imageSet: imageSets[currentFile]
+        });
+        //jd = loadJSONData(dataArrays[0][3]);
+
+
+        tags = setInitialTags(dataArrays);
+
+
     })
 
 
