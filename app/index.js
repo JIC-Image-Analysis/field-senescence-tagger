@@ -47,6 +47,13 @@ var prepImage = function(selectorName) {
     var item = document.querySelector(selectorName);
     item.addEventListener('click', function(event) {
         var elemRect = item.getBoundingClientRect();
+        var height = item.height;
+        var width = item.width;
+        var absX = event.clientX - elemRect.left;
+        var absY = event.clientY - elemRect.top;
+        var normX = absX / width;
+        var normY = absY / height;
+        mainLog('norm coords ' + normX + ',' + normY);
         mainLog('clicked ' + selectorName + ' ' + (event.clientX - elemRect.left) + ',' + (event.clientY - elemRect.top));       
     });
 };
