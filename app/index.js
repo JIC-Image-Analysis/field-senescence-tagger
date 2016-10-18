@@ -65,22 +65,24 @@ var prepImage = function(selectorName) {
 
 };
 
-ipcRenderer.on('load-many-images', function(event, data) {
-    console.log('load-many-images...');
-    var filenames = data.files;
+ipcRenderer.on('load-imageSet', function(event, imageSet) {
+
+    var filenames = imageSet.filenames;
 
     for( var i = 0; i < 3; i++) {
         document.getElementById(positionIds[i]).src = filenames[i];
-
     }
 
     prepImage('#topRight');
     prepImage('#bottomLeft');
     prepImage('#topLeft');
 
-    var text = getTagText(data);
-    if ('normalised_marker_x_coord' in data.imageSet.metadata) {
-        document.getElementById('tag').innerHTML = 'clicked ' + data.imageSet.metadata['normalised_marker_x_coord'];
+    //var text = getTagText(data);
+    if ('normalised_marker_x_coord' in imageSet.metadata) {
+        var x = imageSet.metadata['normalised_marker_x_coord'].toFixed(3);
+        var y = imageSet.metadata['normalised_marker_y_coord'].toFixed(3);
+        document.getElementById('tag').innerHTML = 'clicked (' + x + ',' + y + ')';
+        //document.getElementById('tag').innerHTML = 'clicked {0}'.format(x);
     } else {
         document.getElementById('tag').innerHTML = 'untagged';
     }

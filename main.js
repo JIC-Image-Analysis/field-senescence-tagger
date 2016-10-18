@@ -43,6 +43,8 @@ var generateImagePathArrays = function(imagesDir, keywords) {
 };
 
 var loadJSONData = function(fq_filename) {
+    /* Read data from the fully qualifiled filename, parse as JSON and return
+    the result. */
 
     var JSONData = JSON.parse(fs.readFileSync(fq_filename, 'utf8'));
 
@@ -92,7 +94,7 @@ app.on('ready', function() {
         imageSets[currentFile].metadata['normalised_marker_x_coord'] = data.x;
         imageSets[currentFile].metadata['normalised_marker_y_coord'] = data.y;
 
-        showTag('clicked');
+        showCurrentImageSet();
     });
 
     mainWindow = new BrowserWindow({
@@ -113,28 +115,21 @@ app.on('ready', function() {
         return dataArrays;
     }
 
-    var saveTags = function() {
-        var f = fs.openSync("tags.out", "w");
-
-        Object.keys(tags).forEach(function(key) {
-            fs.writeSync(f, key + '\t' + tags[key] + '\n');
-        });
+    var saveImageSetData = function() {
 
         for(var i = 0; i < imageSets.length; i++) {
-            f = fs.openSync(imageSets[i].jsonFilename, "w");
+            var f = fs.openSync(imageSets[i].jsonFilename, "w");
             fs.writeSync(f, JSON.stringify(imageSets[i].metadata, null, '\t'));
         }
+
     }
 
-    var quiteImageTagger = function() {
-        if (tags) {
-            saveTags();
-        }
+    var quitImageTagger = function() {
+
+        saveImageSetData();
+
         app.quit();
     }
-
-    var tags;
-    var dataArrays;
 
     mainWindow.loadURL('file://' + __dirname + '/app/index.html');
 
@@ -142,10 +137,6 @@ app.on('ready', function() {
 
     var currentFile = 0;
 
-    // mainWindow.webContents.on('did-finish-load', function() {
-    //     mainWindow.webContents.send('load-many-images', {files: dataArrays[0], tag: "Untagged"});
-    //     mainWindow.show();
-    // });
     mainWindow.webContents.on('did-finish-load', function() {
         fs.readFile("README.md", "utf8", function(err, data) {
             if (err) {
@@ -158,8 +149,6 @@ app.on('ready', function() {
         });
     });
 
-
-
     var setInitialTags = function(nameArrays) {
 
         var initialTags = new Object();
@@ -170,30 +159,26 @@ app.on('ready', function() {
         return initialTags;
     }
 
+    var showCurrentImageSet = function() {
+        mainWindow.webContents.send('load-imageSet', imageSets[currentFile]);
+    }
 
     var showTag = function(newTag) {
-        mainWindow.webContents.send('set-tag',
-          {tag: newTag, pos: currentFile, tot: dataArrays.length});       
+        // mainWindow.webContents.send('set-tag',
+        //   {tag: newTag, pos: currentFile, tot: dataArrays.length});       
     }
 
     var nextFile = function () {
-        if ((currentFile+1) < dataArrays.length) {
+        if ((currentFile+1) < imageSets.length) {
             currentFile++;
-            mainWindow.webContents.send('load-many-images', {files: dataArrays[currentFile], 
-                pos: currentFile, 
-                tot: dataArrays.length,
-                imageSet: imageSets[currentFile]
-            });    
-            console.log(dataArrays[currentFile]);
-            //showTag(tags[dataArrays[currentFile][0]]);                    
+            showCurrentImageSet();
         };
     };
 
     var prevFile = function() {
         if (currentFile > 0) {
             currentFile--;
-            mainWindow.webContents.send('load-many-images', {files: dataArrays[currentFile], pos: currentFile, tot: dataArrays.length});
-            showTag(tags[dataArrays[currentFile][0]]);                    
+            showCurrentImageSet();
         };
     };
 
@@ -202,10 +187,11 @@ app.on('ready', function() {
     }
 
     globalShortcut.register('1', function() {
-        var newTag = 'good';
-        tags[dataArrays[currentFile][0]] = newTag;
-        showTag(newTag);
-	setTimeout(nextFile, 100);
+        imageSets[currentFile].metadata['tag'] = "Segmentation failure";
+ //        #var newTag = 'good';
+ //        tags[dataArrays[currentFile][0]] = newTag;
+ //        showTag(newTag);
+	// setTimeout(nextFile, 100);
     });
 
     globalShortcut.register('2', function() {
@@ -223,30 +209,19 @@ app.on('ready', function() {
     globalShortcut.register('h', prevFile);
     globalShortcut.register('Left', prevFile);
 
-    globalShortcut.register('s', saveTags);
+    globalShortcut.register('s', saveImageSetData);
 
-    globalShortcut.register('q', quiteImageTagger);
-    globalShortcut.register('Esc', quiteImageTagger);
+    globalShortcut.register('q', quitImageTagger);
+    globalShortcut.register('Esc', quitImageTagger);
 
     globalShortcut.register('o', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
 
-        dataArrays = findFileNamesFromDirectory(dir[0]);
-
-        console.log(dataArrays);
         imageSets = loadImagesetsFromDirectory(dir[0]);
 
-        mainWindow.webContents.send('load-many-images', {files: dataArrays[0], 
-            pos: 0, tot: dataArrays.length, 
-            tag: "Untagged",
-            imageSet: imageSets[currentFile]
-        });
-        //jd = loadJSONData(dataArrays[0][3]);
-
-
-        tags = setInitialTags(dataArrays);
-
-
+        currentFile = 0;
+        //mainWindow.webContents.send('load-imageSet', imageSets[curentFile]);
+        showCurrentImageSet();
     })
 
 
