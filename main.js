@@ -88,6 +88,7 @@ app.on('ready', function() {
     });
 
     ipcMain.on('registerClick', function(event, data) {
+        console.log('Received registerClick');
 
         imageSets[currentFile].metadata['normalised_marker_x_coord'] = data.x;
         imageSets[currentFile].metadata['normalised_marker_y_coord'] = data.y;
@@ -96,6 +97,8 @@ app.on('ready', function() {
         imageSets[currentFile].metadata['tag'] = 'clicked (' + x + ',' + y + ')';
 
         showCurrentImageSet();
+
+        setTimeout(nextFile, 0);
     });
 
     mainWindow = new BrowserWindow({
@@ -150,6 +153,9 @@ app.on('ready', function() {
             mainWindow.webContents.send('set-help', {help_html:
                 help_html});
         });
+
+        mainWindow.webContents.send('set-clickFunctions');
+
     });
 
     var setInitialTags = function(nameArrays) {
@@ -221,6 +227,8 @@ app.on('ready', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
 
         imageSets = loadImagesetsFromDirectory(dir[0]);
+
+        //mainWindow.webContents.send('set-clickFunctions');
 
         currentFile = 0;
         //mainWindow.webContents.send('load-imageSet', imageSets[curentFile]);

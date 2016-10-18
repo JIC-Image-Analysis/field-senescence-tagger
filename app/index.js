@@ -65,6 +65,13 @@ var prepImage = function(selectorName) {
 
 };
 
+ipcRenderer.on('set-clickFunctions', function(event) {
+
+    prepImage('#topRight');
+    prepImage('#bottomLeft');
+    prepImage('#topLeft');   
+});
+
 ipcRenderer.on('load-imageSet', function(event, imageSet) {
 
     var filenames = imageSet.filenames;
@@ -73,9 +80,6 @@ ipcRenderer.on('load-imageSet', function(event, imageSet) {
         document.getElementById(positionIds[i]).src = filenames[i];
     }
 
-    prepImage('#topRight');
-    prepImage('#bottomLeft');
-    prepImage('#topLeft');
 
     if ('tag' in imageSet.metadata) {
         document.getElementById('tag').innerHTML = imageSet.metadata['tag'];
