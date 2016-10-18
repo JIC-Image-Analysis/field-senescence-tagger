@@ -88,6 +88,9 @@ ipcRenderer.on('load-imageSet', function(event, imageSet) {
 
 });
 
+ipcRenderer.on('update-status', function(event, data) {
+    document.getElementById('status').innerHTML = data;
+});
 
 ipcRenderer.on('toggle-help', function(event, data) {
     var help_element = document.getElementById('help'),

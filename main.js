@@ -118,11 +118,13 @@ app.on('ready', function() {
 
     var saveImageSetData = function() {
 
+
         for(var i = 0; i < imageSets.length; i++) {
             var f = fs.openSync(imageSets[i].jsonFilename, "w");
             fs.writeSync(f, JSON.stringify(imageSets[i].metadata, null, '\t'));
         }
 
+        updateStatus('Saved');
     }
 
     var quitImageTagger = function() {
@@ -162,6 +164,12 @@ app.on('ready', function() {
 
     var showCurrentImageSet = function() {
         mainWindow.webContents.send('load-imageSet', imageSets[currentFile]);
+        var statusText = 'Image ' + (currentFile + 1).toString() + ' of ' + (1 + imageSets.length).toString();
+        updateStatus(statusText);
+    }
+
+    var updateStatus = function(text) {
+        mainWindow.webContents.send('update-status', text);
     }
 
     var setCurrentTag = function(tagText) {
@@ -192,6 +200,7 @@ app.on('ready', function() {
     possibleTags.forEach(function(tag, index) {
         globalShortcut.register(index.toString(), function() {
             setCurrentTag(tag);
+            setTimeout(nextFile, 100);
         });
     });
 
