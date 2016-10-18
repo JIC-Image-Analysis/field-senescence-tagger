@@ -77,12 +77,8 @@ ipcRenderer.on('load-imageSet', function(event, imageSet) {
     prepImage('#bottomLeft');
     prepImage('#topLeft');
 
-    //var text = getTagText(data);
-    if ('normalised_marker_x_coord' in imageSet.metadata) {
-        var x = imageSet.metadata['normalised_marker_x_coord'].toFixed(3);
-        var y = imageSet.metadata['normalised_marker_y_coord'].toFixed(3);
-        document.getElementById('tag').innerHTML = 'clicked (' + x + ',' + y + ')';
-        //document.getElementById('tag').innerHTML = 'clicked {0}'.format(x);
+    if ('tag' in imageSet.metadata) {
+        document.getElementById('tag').innerHTML = imageSet.metadata['tag'];
     } else {
         document.getElementById('tag').innerHTML = 'untagged';
     }

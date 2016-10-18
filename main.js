@@ -11,8 +11,6 @@ var marked = require('marked');
 
 var mainWindow = null;
 
-var images_dir = 'data/cell-data';
-
 var ImageSet = function() {};
 var imageSets = [];
 
@@ -93,6 +91,9 @@ app.on('ready', function() {
 
         imageSets[currentFile].metadata['normalised_marker_x_coord'] = data.x;
         imageSets[currentFile].metadata['normalised_marker_y_coord'] = data.y;
+        var x = data.x.toFixed(3);
+        var y = data.y.toFixed(3);
+        imageSets[currentFile].metadata['tag'] = 'clicked (' + x + ',' + y + ')';
 
         showCurrentImageSet();
     });
@@ -163,9 +164,9 @@ app.on('ready', function() {
         mainWindow.webContents.send('load-imageSet', imageSets[currentFile]);
     }
 
-    var showTag = function(newTag) {
-        // mainWindow.webContents.send('set-tag',
-        //   {tag: newTag, pos: currentFile, tot: dataArrays.length});       
+    var setCurrentTag = function(tagText) {
+        imageSets[currentFile].metadata['tag'] = tagText;
+        showCurrentImageSet();
     }
 
     var nextFile = function () {
@@ -186,19 +187,12 @@ app.on('ready', function() {
         mainWindow.webContents.send('toggle-help', {});
     }
 
-    globalShortcut.register('1', function() {
-        imageSets[currentFile].metadata['tag'] = "Segmentation failure";
- //        #var newTag = 'good';
- //        tags[dataArrays[currentFile][0]] = newTag;
- //        showTag(newTag);
-	// setTimeout(nextFile, 100);
-    });
+    var possibleTags = ['Untagged', 'No marker', 'Border cell', 'Segmentation failure', 'Stoma'];
 
-    globalShortcut.register('2', function() {
-        var newTag = 'bad';
-        tags[dataArrays[currentFile][0]] = newTag;
-        showTag(newTag);
-	setTimeout(nextFile, 100);
+    possibleTags.forEach(function(tag, index) {
+        globalShortcut.register(index.toString(), function() {
+            setCurrentTag(tag);
+        });
     });
 
     globalShortcut.register('h', toggleHelp);
