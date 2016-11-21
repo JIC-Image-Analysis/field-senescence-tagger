@@ -161,6 +161,7 @@ app.on('ready', function() {
 
     var updateStatus = function() {
         var statusText = 'Image ' + (currentFile + 1).toString() + ' of ' + (1 + fieldImages.length).toString();
+        statusText += ' ' + fieldImages[currentFile].filename;
         statusText += '<br>'
         statusText += clickLocations[clickLocation];
         mainWindow.webContents.send('update-status', statusText);

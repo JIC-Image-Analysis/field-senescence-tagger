@@ -67,6 +67,7 @@ var prepImage = function(selectorName) {
 ipcRenderer.on('set-clickFunctions', function(event) {
 
     prepImage('#fieldImage');
+    
     mainLog('hello');  
 });
 
