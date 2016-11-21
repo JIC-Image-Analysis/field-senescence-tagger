@@ -11,34 +11,9 @@ var marked = require('marked');
 
 var mainWindow = null;
 
-var ImageSet = function() {};
-var imageSets = [];
-
-var generateImagePathArrays = function(imagesDir, keywords) {
-    /* Load files from a directory. The keywords are used to split the files
-    up into different arrays. The function returns three arrays. */
-
-    var files = fs.readdirSync(imagesDir);
-
-    var nKeywords = keywords.length
-
-    var pathArrays = [];
-
-    for (var i = 0; i < nKeywords; i++) {
-        pathArrays.push([]);
-    }
-
-    for (var i = 0; i < files.length; i++) {
-        for (var j = 0; j < nKeywords; j++) {
-            if (files[i].indexOf(keywords[j]) !== -1) {
-                pathArrays[j].push(imagesDir + '/' + files[i]);
-            }
-        }
-    }
-    
-    return pathArrays
-
-};
+var FieldImageData = function() {};
+var fieldImages = [];
+var imageFileNames = [];
 
 var loadJSONData = function(fq_filename) {
     /* Read data from the fully qualifiled filename, parse as JSON and return
@@ -60,25 +35,24 @@ var zipArrays = function(arrays) {
 
 }
 
-var loadImagesetsFromDirectory = function(imagesDir) {
+var loadImagesFromDirectory = function(imagesDir) {
+    var extension = 'JPG';
 
-    var keywords = ['wall', 'marker', 'combined', 'json'];
+    var files = fs.readdirSync(imagesDir);
 
-    var fileNameArrays = generateImagePathArrays(imagesDir, keywords);
+    var imageFileNames = [];
 
-    var dataArrays = zipArrays(fileNameArrays);
+    for (var i = 0; i < files.length; i++) {
+        // FIXME - this will also match when JPG is in the name but not the final characters
+        if (files[i].indexOf(extension) !== -1) {
+            var fid = new FieldImageData();
+            fid.filename = imagesDir + '/' + files[i];
+            //imageFileNames.push(imagesDir + '/' + files[i]);
+            fieldImages.push(fid);
+        }
 
-    var imageSets = [];
-
-    for(var i = 0; i < dataArrays.length; i++) {
-        var is = new ImageSet();
-        is.metadata = loadJSONData(dataArrays[i][3]);
-        is.jsonFilename = dataArrays[i][3];
-        is.filenames = dataArrays[i];
-        imageSets.push(is);       
     }
-
-    return imageSets;
+    console.log(imageFileNames);
 }
 
 app.on('ready', function() {
@@ -132,7 +106,7 @@ app.on('ready', function() {
 
     var quitImageTagger = function() {
 
-        saveImageSetData();
+        //saveImageSetData();
 
         app.quit();
     }
@@ -148,13 +122,13 @@ app.on('ready', function() {
             if (err) {
                 return console.log(err);
             }
-            var help_markdown = data;
-            var help_html = marked(help_markdown);
-            mainWindow.webContents.send('set-help', {help_html:
-                help_html});
+            // var help_markdown = data;
+            // var help_html = marked(help_markdown);
+            // mainWindow.webContents.send('set-help', {help_html:
+            //     help_html});
         });
 
-        mainWindow.webContents.send('set-clickFunctions');
+        //mainWindow.webContents.send('set-clickFunctions');
 
     });
 
@@ -174,6 +148,11 @@ app.on('ready', function() {
         updateStatus(statusText);
     }
 
+    var showCurrentImage = function() {
+        console.log(fieldImages[currentFile].filename);
+        mainWindow.webContents.send('load-image', fieldImages[currentFile]);
+    }
+
     var updateStatus = function(text) {
         mainWindow.webContents.send('update-status', text);
     }
@@ -183,17 +162,17 @@ app.on('ready', function() {
         showCurrentImageSet();
     }
 
-    var nextFile = function () {
-        if ((currentFile+1) < imageSets.length) {
+    var nextFile = function () {    
+        if ((currentFile+1) < fieldImages.length) {
             currentFile++;
-            showCurrentImageSet();
+            showCurrentImage();
         };
     };
 
     var prevFile = function() {
         if (currentFile > 0) {
             currentFile--;
-            showCurrentImageSet();
+            showCurrentImage();
         };
     };
 
@@ -227,13 +206,14 @@ app.on('ready', function() {
     globalShortcut.register('o', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
 
-        imageSets = loadImagesetsFromDirectory(dir[0]);
+        imageFileNames = loadImagesFromDirectory(dir[0]);
 
         //mainWindow.webContents.send('set-clickFunctions');
 
         currentFile = 0;
         //mainWindow.webContents.send('load-imageSet', imageSets[curentFile]);
-        showCurrentImageSet();
+        showCurrentImage();
+        //showCurrentImageSet();
     })
 
 

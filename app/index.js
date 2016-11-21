@@ -17,12 +17,11 @@ ipcRenderer.on('global-shortcut', function(arg) {
     document.getElementById("mainImage").src = "../data/sequence/z250.png";
 });
 
-ipcRenderer.on('load-image', function(event, data) {
-    var filename = data.msg;
-    var pos = data.pos;
+ipcRenderer.on('load-image', function(event, fieldImage) {
+    var filename = fieldImage.filename;
+    //var pos = data.pos;
 
-    document.getElementById(pos).src = filename;
-    document.getElementById("tag").innerHTML = data.tag;
+    document.getElementById("fieldImage").src = filename;
 
     console.log(filename);
 
