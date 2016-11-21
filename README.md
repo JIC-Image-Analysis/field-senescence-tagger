@@ -1,16 +1,10 @@
-# Image tagging
+# Field image tagging
 
 ## Key bindings
 
 | Action         | Key   |
 | -------------- | ----- |
 | Open directory | ``o`` |
-| Tag as "good"  | ``1`` |
-| Tag as "bad"   | ``2`` |
-| Next image     | ``RightArrow``, ``l`` |
-| Previous image | ``LeftArrow``, ``h`` |
-| Toggle help    | ``h`` |
-| Save           | ``s`` |
 | Quit           | ``Esc``, ``q`` |
 
 ## To install

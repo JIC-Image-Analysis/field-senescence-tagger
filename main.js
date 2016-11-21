@@ -40,23 +40,30 @@ var zipArrays = function(arrays) {
 }
 
 var loadImagesFromDirectory = function(imagesDir) {
-    var extension = 'JPG';
+    var extension = '.JPG';
 
     var files = fs.readdirSync(imagesDir);
 
-    var imageFileNames = [];
-
     for (var i = 0; i < files.length; i++) {
         // FIXME - this will also match when JPG is in the name but not the final characters
-        if (files[i].indexOf(extension) !== -1) {
+        console.log(path.extname(files[i]));
+        if (path.extname(files[i]) == extension) {
             var fid = new FieldImageData();
             fid.filename = imagesDir + '/' + files[i];
+            fid.jsonFilename = fid.filename + '.json';
             fid.metadata = {}
             fieldImages.push(fid);
         }
 
     }
-    console.log(imageFileNames);
+
+}
+
+var saveFieldImageData = function(fieldImage) {
+    var jsonMetadata = JSON.stringify(fieldImage.metadata, null, '\t');
+    var f = fs.openSync(fieldImage.jsonFilename, "w");
+    fs.writeSync(f, jsonMetadata);
+    fs.closeSync(f);    
 }
 
 app.on('ready', function() {
@@ -66,30 +73,16 @@ app.on('ready', function() {
     });
 
     ipcMain.on('registerClick', function(event, data) {
-        // console.log('Received registerClick');
-
-        // console.log(data.x);
-        // console.log(data.y);
 
         fieldImages[currentFile].metadata[clickLocations[clickLocation]] = data.x + ',' + data.y;
         clickLocation++;
         if (clickLocation >= clickLocations.length) {
-            console.log(JSON.stringify(fieldImages[currentFile].metadata, null, '\t'));
+            saveFieldImageData(fieldImages[currentFile]);
             nextFile();
             clickLocation = 0;
         }
         updateStatus();
-        //if (clickLocation >= clickLocations.length) clickLocation = 0;
 
-        // imageSets[currentFile].metadata['normalised_marker_x_coord'] = data.x;
-        // imageSets[currentFile].metadata['normalised_marker_y_coord'] = data.y;
-        // var x = data.x.toFixed(3);
-        // var y = data.y.toFixed(3);
-        // imageSets[currentFile].metadata['tag'] = 'clicked (' + x + ',' + y + ')';
-
-        // showCurrentImageSet();
-
-        // setTimeout(nextFile, 0);
     });
 
     mainWindow = new BrowserWindow({
@@ -139,10 +132,10 @@ app.on('ready', function() {
             if (err) {
                 return console.log(err);
             }
-            // var help_markdown = data;
-            // var help_html = marked(help_markdown);
-            // mainWindow.webContents.send('set-help', {help_html:
-            //     help_html});
+            var help_markdown = data;
+            var help_html = marked(help_markdown);
+            mainWindow.webContents.send('set-help', {help_html:
+                help_html});
         });
 
         mainWindow.webContents.send('set-clickFunctions');
@@ -168,7 +161,7 @@ app.on('ready', function() {
 
     var updateStatus = function() {
         var statusText = 'Image ' + (currentFile + 1).toString() + ' of ' + (1 + fieldImages.length).toString();
-        statusText += '                  '
+        statusText += '<br>'
         statusText += clickLocations[clickLocation];
         mainWindow.webContents.send('update-status', statusText);
     }
@@ -225,6 +218,7 @@ app.on('ready', function() {
         imageFileNames = loadImagesFromDirectory(dir[0]);
 
         currentFile = 0;
+        toggleHelp();
         //mainWindow.webContents.send('load-imageSet', imageSets[curentFile]);
         showCurrentImage();
         //showCurrentImageSet();
