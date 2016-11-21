@@ -66,9 +66,8 @@ var prepImage = function(selectorName) {
 
 ipcRenderer.on('set-clickFunctions', function(event) {
 
-    prepImage('#topRight');
-    prepImage('#bottomLeft');
-    prepImage('#topLeft');   
+    prepImage('#fieldImage');
+    mainLog('hello');  
 });
 
 ipcRenderer.on('load-imageSet', function(event, imageSet) {

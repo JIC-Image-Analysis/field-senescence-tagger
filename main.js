@@ -7,6 +7,7 @@ const {dialog} = require('electron');
 const ipcMain = require('electron').ipcMain;
 
 var fs = require('fs');
+const path = require('path');
 var marked = require('marked');
 
 var mainWindow = null;
@@ -14,6 +15,9 @@ var mainWindow = null;
 var FieldImageData = function() {};
 var fieldImages = [];
 var imageFileNames = [];
+
+var clickLocations = [ 'topLeftPlot', 'topRightPlot', 'bottomLeftPlot', 'bottomRightPlot' ];
+var clickLocation = 0;
 
 var loadJSONData = function(fq_filename) {
     /* Read data from the fully qualifiled filename, parse as JSON and return
@@ -47,7 +51,7 @@ var loadImagesFromDirectory = function(imagesDir) {
         if (files[i].indexOf(extension) !== -1) {
             var fid = new FieldImageData();
             fid.filename = imagesDir + '/' + files[i];
-            //imageFileNames.push(imagesDir + '/' + files[i]);
+            fid.metadata = {}
             fieldImages.push(fid);
         }
 
@@ -62,17 +66,30 @@ app.on('ready', function() {
     });
 
     ipcMain.on('registerClick', function(event, data) {
-        console.log('Received registerClick');
+        // console.log('Received registerClick');
 
-        imageSets[currentFile].metadata['normalised_marker_x_coord'] = data.x;
-        imageSets[currentFile].metadata['normalised_marker_y_coord'] = data.y;
-        var x = data.x.toFixed(3);
-        var y = data.y.toFixed(3);
-        imageSets[currentFile].metadata['tag'] = 'clicked (' + x + ',' + y + ')';
+        // console.log(data.x);
+        // console.log(data.y);
 
-        showCurrentImageSet();
+        fieldImages[currentFile].metadata[clickLocations[clickLocation]] = data.x + ',' + data.y;
+        clickLocation++;
+        if (clickLocation >= clickLocations.length) {
+            console.log(JSON.stringify(fieldImages[currentFile].metadata, null, '\t'));
+            nextFile();
+            clickLocation = 0;
+        }
+        updateStatus();
+        //if (clickLocation >= clickLocations.length) clickLocation = 0;
 
-        setTimeout(nextFile, 0);
+        // imageSets[currentFile].metadata['normalised_marker_x_coord'] = data.x;
+        // imageSets[currentFile].metadata['normalised_marker_y_coord'] = data.y;
+        // var x = data.x.toFixed(3);
+        // var y = data.y.toFixed(3);
+        // imageSets[currentFile].metadata['tag'] = 'clicked (' + x + ',' + y + ')';
+
+        // showCurrentImageSet();
+
+        // setTimeout(nextFile, 0);
     });
 
     mainWindow = new BrowserWindow({
@@ -128,7 +145,7 @@ app.on('ready', function() {
             //     help_html});
         });
 
-        //mainWindow.webContents.send('set-clickFunctions');
+        mainWindow.webContents.send('set-clickFunctions');
 
     });
 
@@ -142,19 +159,18 @@ app.on('ready', function() {
         return initialTags;
     }
 
-    var showCurrentImageSet = function() {
-        mainWindow.webContents.send('load-imageSet', imageSets[currentFile]);
-        var statusText = 'Image ' + (currentFile + 1).toString() + ' of ' + (1 + imageSets.length).toString();
-        updateStatus(statusText);
-    }
 
     var showCurrentImage = function() {
         console.log(fieldImages[currentFile].filename);
         mainWindow.webContents.send('load-image', fieldImages[currentFile]);
+        updateStatus();      
     }
 
-    var updateStatus = function(text) {
-        mainWindow.webContents.send('update-status', text);
+    var updateStatus = function() {
+        var statusText = 'Image ' + (currentFile + 1).toString() + ' of ' + (1 + fieldImages.length).toString();
+        statusText += '                  '
+        statusText += clickLocations[clickLocation];
+        mainWindow.webContents.send('update-status', statusText);
     }
 
     var setCurrentTag = function(tagText) {
@@ -189,7 +205,7 @@ app.on('ready', function() {
         });
     });
 
-    globalShortcut.register('h', toggleHelp);
+    //globalShortcut.register('h', toggleHelp);
 
     globalShortcut.register('l', nextFile);
     globalShortcut.register('Right', nextFile);
@@ -207,8 +223,6 @@ app.on('ready', function() {
         var dir = dialog.showOpenDialog({properties: ['openDirectory']});
 
         imageFileNames = loadImagesFromDirectory(dir[0]);
-
-        //mainWindow.webContents.send('set-clickFunctions');
 
         currentFile = 0;
         //mainWindow.webContents.send('load-imageSet', imageSets[curentFile]);
